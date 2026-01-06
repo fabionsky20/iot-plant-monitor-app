@@ -1,5 +1,5 @@
 import 'package:get/get.dart';
-import '../data/plant_profiles.dart';
+import '../../data/plant_profiles.dart';
 
 class SensorsProvisionController extends GetxController {
   // quale pianta è selezionata

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-import '../controllers/wifi_provision_controller.dart';
-import '../controllers/sensors_provision_controller.dart';
-import '../controllers/provision_payload_controller.dart';
+import '../controllers/provisions/wifi_provision_controller.dart';
+import '../controllers/provisions/sensors_provision_controller.dart';
+import '../controllers/provisions/provision_payload_controller.dart';
 import '../data/plant_profiles.dart';
 import 'home_page.dart';
 
@@ -94,7 +94,7 @@ class _WifiPageState extends State<WifiPage> {
 
                   if (payloadC.status.value == 'SENT') {
                     Get.offAll(() => const HomePage());
-                    Get.snackbar('Configurazione inviata', 'Dati inviati a ESP32 ✅');
+                    Get.snackbar('Configurazione inviata', 'Dati inviati a ESP32');
                   } else if (payloadC.status.value.startsWith('ERROR')) {
                     Get.snackbar('Errore', payloadC.status.value);
                   } else {

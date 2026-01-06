@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:get/get.dart';
-import '../controllers/provision_controller.dart';
+import '../controllers/BLE_controller.dart';
 import '../controllers/devices_controller.dart';
 import 'wifi_page.dart';
 

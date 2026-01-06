@@ -73,3 +73,6 @@ Thumbs.db
 .env
 *.keystore
 key.properties
+backend/.env
+**/.env
+

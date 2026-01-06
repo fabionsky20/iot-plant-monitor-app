@@ -14,6 +14,9 @@ const wss = new WebSocket.Server({ noServer: true });
 const wsClientsByDevice = new Map();
 
 function broadcastToDevice(deviceId, data) {
+
+    console.log("📣 broadcastToDevice:", deviceId, "clients=", (wsClientsByDevice.get(deviceId)?.size ?? 0));
+
   const clients = wsClientsByDevice.get(deviceId);
   if (!clients) return;
 
@@ -152,6 +155,9 @@ async function start() {
   server.on("upgrade", (req, socket, head) => {
     const url = new URL(req.url, "http://localhost");
     const deviceId = url.searchParams.get("deviceId");
+
+    console.log("🔌 WS upgrade:", req.url, "deviceId=", deviceId);
+
 
     if (!deviceId) {
       socket.destroy();

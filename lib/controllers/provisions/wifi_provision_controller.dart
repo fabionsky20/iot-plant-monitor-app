@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:get/get.dart';
-import 'provision_controller.dart';
+import '../BLE_controller.dart';
 
 class WifiProvisionController extends GetxController {
   // UI state

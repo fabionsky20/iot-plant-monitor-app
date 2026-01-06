@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'controllers/provision_controller.dart';
+import 'controllers/BLE_controller.dart';
 import 'controllers/devices_controller.dart';
 import 'pages/home_page.dart';
+import 'data/mqtt_repository.dart';
+import 'controllers/mqtt_controller.dart';
 
 class PlantFormioApp extends StatelessWidget {
   const PlantFormioApp({super.key});
@@ -11,6 +13,7 @@ class PlantFormioApp extends StatelessWidget {
   Widget build(BuildContext context) {
     Get.put(ProvisionController(), permanent: true);
     Get.put(DevicesController(), permanent: true);
+    Get.put(MqttController(MqttRepository()), permanent: true);
 
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,

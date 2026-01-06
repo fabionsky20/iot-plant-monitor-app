@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../controllers/provision_controller.dart';
+import '../controllers/BLE_controller.dart';
 import '../controllers/devices_controller.dart';
 import 'scan_page.dart';
+import 'device_detail_page.dart';
+
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -102,6 +104,25 @@ class HomePage extends StatelessWidget {
             onPressed: devicesC.loadDevices,
             icon: const Icon(Icons.refresh),
           ),
+
+
+
+
+
+          //--------------------------------------------------------------------------
+          IconButton(
+            tooltip: 'Aggiungi DEMO',
+            icon: const Icon(Icons.bug_report),
+            onPressed: () async {
+              await devicesC.addOrUpdate(alias: 'Demo Basilico', deviceId: 'esp32_001');
+              Get.snackbar('DEV', 'Aggiunto device demo esp32_001');
+            },
+          ),
+          //--------------------------------------------------------------------------
+
+
+
+
         ],
       ),
       drawer: Drawer(
@@ -180,6 +201,13 @@ class HomePage extends StatelessWidget {
                 return Card(
                   elevation: 2,
                   child: ListTile(
+                    onTap: () {
+                      // Apri dettaglio device
+                      Get.to(() => DeviceDetailPage(
+                        deviceId: d.deviceId,
+                        deviceName: d.alias,
+                      ));
+                    },
                     contentPadding: const EdgeInsets.symmetric(
                         horizontal: 16, vertical: 10),
                     leading: CircleAvatar(
