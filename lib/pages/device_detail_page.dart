@@ -611,8 +611,8 @@ _ConnStatus _computeConnection({
   if (lastSampleTs == null) return _ConnStatus.warning;
 
   final age = DateTime.now().difference(lastSampleTs.toLocal());
-  if (age.inMinutes <= 2) return _ConnStatus.ok;
-  if (age.inMinutes <= 10) return _ConnStatus.warning;
+  if (age.inHours < 12) return _ConnStatus.ok;
+  if (age.inHours < 24) return _ConnStatus.warning;
   return _ConnStatus.offline;
 }
 
