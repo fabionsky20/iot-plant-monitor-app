@@ -6,7 +6,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 class MqttRepository {
   static const String backendHost =
-  String.fromEnvironment('BACKEND_HOST', defaultValue: '192.168.188.30');
+  String.fromEnvironment('BACKEND_HOST', defaultValue: '84.8.255.56');
 
   static const int backendPort =
   int.fromEnvironment('BACKEND_PORT', defaultValue: 3000);
@@ -22,7 +22,7 @@ class MqttRepository {
   WebSocketChannel? _channel;
   StreamSubscription? _wsSub;
 
-  bool _ready = false; // ✅ questo serve per non bloccare openDevice()
+  bool _ready = false;
 
   bool get isConnected => _ready;
 

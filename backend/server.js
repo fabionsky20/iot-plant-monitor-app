@@ -89,7 +89,16 @@ async function start() {
     const deviceId = parseDeviceIdFromTopic(topic);
     if (!deviceId) return;
 
-    const ts = typeof json.ts === "number" ? new Date(json.ts) : new Date();
+    const receivedAt = new Date();
+
+    // se vuoi tenere anche il timestamp del device (opzionale)
+    let deviceTs = null;
+    if (typeof json.ts === "number") {
+      // supporta sia ms che secondi (se arriva in secondi)
+      deviceTs = new Date(json.ts < 1e12 ? json.ts * 1000 : json.ts);
+    }
+    const ts = receivedAt; // 🔥 questo è quello usato per db + "ultimo dato"
+
 
     if (topic.endsWith("/telemetry")) {
       const doc = {
@@ -117,8 +126,9 @@ async function start() {
       type: topic.endsWith("/telemetry") ? "telemetry" : "alarm",
       deviceId,
       ts: ts.toISOString(),
-      data: json
+      data: { ...json, ts: ts.toISOString() }
     });
+
 
   });
 
@@ -135,17 +145,37 @@ async function start() {
   });
 
   app.get("/devices/:id/history", async (req, res) => {
-    const deviceId = req.params.id;
-    const hours = Number(req.query.hours ?? 24);
-    const from = new Date(Date.now() - hours * 60 * 60 * 1000);
+    try {
+      const deviceId = req.params.id;
 
-    const list = await telemetryCol
-      .find({ deviceId, ts: { $gte: from } })
-      .sort({ ts: 1 })
-      .toArray();
+      const hoursRaw = req.query.hours;
+      const limit = Math.min(Number(req.query.limit ?? 500), 2000);
 
-    res.json(list);
+      const query = { deviceId };
+
+      // hours opzionale: se non lo passi, ritorna tutto (limitato)
+      if (hoursRaw !== undefined) {
+        const hours = Number(hoursRaw);
+        if (!Number.isFinite(hours) || hours <= 0) {
+          return res.status(400).json({ error: "Invalid hours" });
+        }
+        const from = new Date(Date.now() - hours * 60 * 60 * 1000);
+        query.ts = { $gte: from };
+      }
+
+      const list = await telemetryCol
+        .find(query)
+        .sort({ ts: 1 })
+        .limit(limit)
+        .toArray();
+
+      res.json(list);
+    } catch (e) {
+      console.error("history error", e);
+      res.status(500).json({ error: "history_failed" });
+    }
   });
+
 
 
   const server = app.listen(PORT, "0.0.0.0", () => {

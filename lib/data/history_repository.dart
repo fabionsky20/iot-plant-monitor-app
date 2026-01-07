@@ -3,18 +3,25 @@ import 'package:http/http.dart' as http;
 import '../models/sensor_sample.dart';
 
 class HistoryRepository {
-  // Se testi su Android emulator: 10.0.2.2
-  // Se testi su telefono: IP del tuo PC nella stessa rete (es: 192.168.1.50)
   static const String backendHost =
-  String.fromEnvironment('BACKEND_HOST', defaultValue: '192.168.188.30');
+  String.fromEnvironment('BACKEND_HOST', defaultValue: '84.8.255.56');
   static const int backendPort =
   int.fromEnvironment('BACKEND_PORT', defaultValue: 3000);
 
   static String get baseUrl => 'http://$backendHost:$backendPort';
 
 
-  Future<List<SensorSample>> fetchLast24h(String deviceId) async {
-    final uri = Uri.parse('$baseUrl/devices/$deviceId/history?hours=24');
+  Future<List<SensorSample>> fetchHistory(
+      String deviceId, {
+        int? hours, // null = tutto (limitato dal backend)
+        int limit = 500,
+      }) async {
+    final q = <String, String>{'limit': '$limit'};
+    if (hours != null) q['hours'] = '$hours';
+
+    final uri = Uri.parse('$baseUrl/devices/$deviceId/history')
+        .replace(queryParameters: q);
+
     final res = await http.get(uri);
 
     if (res.statusCode != 200) {
@@ -39,4 +46,5 @@ class HistoryRepository {
       );
     }).toList();
   }
+
 }

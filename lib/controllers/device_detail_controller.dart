@@ -30,11 +30,8 @@ class DeviceDetailController extends GetxController {
     _loadHistory();
     _mqtt.openDevice(deviceId);
 
-    // ascolta ultimi eventi MQTT
     ever<MqttEvent?>(_mqtt.lastEventRx, (ev) {
       if (ev == null) return;
-
-      print("📲 Flutter got event topic=${ev.topic} raw=${ev.raw}");
 
       // Filtra: solo eventi del deviceId attuale
       if (!ev.topic.contains('/$deviceId/')) return;
@@ -44,9 +41,11 @@ class DeviceDetailController extends GetxController {
         if (sample != null) {
           current.value = sample;
 
-          print("✅ current updated T=${sample.temperature} H=${sample.humidity} C=${sample.chlorophyll}");
-
+          // Aggiungi allo storico (cap per non crescere infinito)
           history.add(sample);
+          if (history.length > 2000) {
+            history.removeRange(0, history.length - 2000);
+          }
         }
       } else if (ev.isAlarm) {
         alarmText.value = ev.json?['message']?.toString() ?? ev.raw;
@@ -57,7 +56,8 @@ class DeviceDetailController extends GetxController {
   Future<void> _loadHistory() async {
     isLoading.value = true;
     try {
-      final list = await _history.fetchLast24h(deviceId);
+      // Se vuoi ultime 24h: fetchHistory(deviceId, hours: 24)
+      final list = await _history.fetchHistory(deviceId);
       history.assignAll(list);
       if (list.isNotEmpty) current.value = list.last;
     } finally {
@@ -65,16 +65,24 @@ class DeviceDetailController extends GetxController {
     }
   }
 
-  //parsing mqtt signal
   SensorSample? _parseTelemetry(MqttEvent ev) {
     final j = ev.json;
     if (j == null) return null;
 
+    // 1) Gestione wrapper: se esiste "data" e sembra una mappa, usiamola come payload
+    final dynamic dataDyn = j['data'];
+    final Map<String, dynamic> payload =
+    (dataDyn is Map) ? dataDyn.cast<String, dynamic>() : j;
+
+    // 2) Timestamp robusto: preferisci wrapper ts, poi payload ts
     DateTime ts = DateTime.now();
-    final tsv = j['ts'];
+    dynamic tsv = j['ts'] ?? payload['ts'];
 
     if (tsv is int) {
+      // ms epoch
       ts = DateTime.fromMillisecondsSinceEpoch(tsv);
+    } else if (tsv is num) {
+      ts = DateTime.fromMillisecondsSinceEpoch(tsv.toInt());
     } else if (tsv is String) {
       ts = DateTime.tryParse(tsv) ?? DateTime.now();
     }
@@ -84,10 +92,9 @@ class DeviceDetailController extends GetxController {
     return SensorSample(
       deviceId: deviceId,
       ts: ts,
-      temperature: d(j['temperature']),
-      humidity: d(j['humidity']),
-      chlorophyll: d(j['chlorophyll']),
+      temperature: d(payload['temperature']),
+      humidity: d(payload['humidity']),
+      chlorophyll: d(payload['chlorophyll']),
     );
   }
-
 }
